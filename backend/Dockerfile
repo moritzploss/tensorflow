@@ -4,4 +4,4 @@ COPY package*.json ./
 RUN npm i --only=prod
 COPY ./dist .
 EXPOSE 8080
-CMD [ "npm", "run dev" ]
+CMD [ "node", "./server.js" ]
