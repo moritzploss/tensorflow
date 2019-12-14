@@ -1,5 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var routes_1 = require("./routes");
+var logging_1 = require("./logging");
 var express = require("express");
+var morgan = require("morgan");
+var helmet = require("helmet");
 var app = express();
+app.use(helmet());
+app.use(morgan('tiny', { stream: logging_1.loggStream }));
+app.use('/', routes_1.default);
 exports.default = app;
