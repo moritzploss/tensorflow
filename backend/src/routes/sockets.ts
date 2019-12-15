@@ -1,9 +1,16 @@
+import * as wsController from '../controllers/sockets';
+
 import express = require('express');
 import expressWs = require('express-ws');
 
-expressWs(express());
+const wsInstance = expressWs(express());
 const socketsRouter = express.Router();
 
-socketsRouter.ws('/', (ws) => ws.send('hello'));
+wsInstance.getWss().on('connection', wsController.onConnection);
+
+socketsRouter.ws('clients/:id', (ws) => {
+  ws.on('message', wsController.onMessage);
+  ws.on('close', wsController.onClose);
+});
 
 export default socketsRouter;

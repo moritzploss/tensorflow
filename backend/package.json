@@ -8,7 +8,7 @@
   "scripts": {
     "lint": "esw -w --clear './src/**.ts'",
     "dev": "DEBUG=hackday:* nodemon ./dist/server.js --exec \"node --require 'dotenv/config'\"",
-    "test": "mocha './tests/**.test.js' --exit",
+    "test": "jest",
     "compile:watch": "tsc -p . --watch",
     "compile": "tsc -p .",
     "public": "cp -r ./src/public/ ./dist/public/",
@@ -17,9 +17,6 @@
     "start": "node ./dist/server.js"
   },
   "dependencies": {
-    "@types/express-ws": "^3.0.0",
-    "@types/helmet": "0.0.45",
-    "@types/morgan": "^1.7.37",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
     "express": "^4.17.1",
@@ -27,6 +24,7 @@
     "express-ws": "^4.0.0",
     "helmet": "^3.21.2",
     "morgan": "^1.9.1",
+    "uuid": "^3.3.3",
     "winston": "^3.2.1"
   },
   "devDependencies": {
@@ -35,8 +33,12 @@
     "@babel/types": "^7.6.3",
     "@types/express": "^4.17.1",
     "@types/express-session": "^1.15.15",
+    "@types/express-ws": "^3.0.0",
+    "@types/helmet": "0.0.45",
     "@types/jest": "^24.0.19",
-    "@types/node": "^12.11.7",
+    "@types/morgan": "^1.7.37",
+    "@types/node": "^12.12.17",
+    "@types/uuid": "^3.4.6",
     "@typescript-eslint/eslint-plugin": "^2.11.0",
     "@typescript-eslint/parser": "^2.11.0",
     "chai": "^4.2.0",
