@@ -10,6 +10,11 @@ The project was originally developed using JavaScript (Express) and React. This 
 
 #### Backend
 
+Install all dependencies:
+
+    cd backend/
+    npm i
+
 Compile the TypeScript files to JavaScript distributables:
 
     npm run build
