@@ -1,14 +1,17 @@
-import router from './routes';
+import socketsRouter from './routes/sockets';
 import { loggStream } from './logging';
 
+import bodyParser = require('body-parser');
 import express = require('express');
-import morgan = require('morgan');
 import helmet = require('helmet');
+import morgan = require('morgan');
 
 const app = express();
 
 app.use(helmet());
+app.use(bodyParser.json());
 app.use(morgan('tiny', { stream: loggStream }));
-app.use('/', router);
+
+app.use('/sockets', socketsRouter);
 
 export default app;
