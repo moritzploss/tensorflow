@@ -9,11 +9,9 @@
     "lint": "esw -w --clear './src/**.ts'",
     "dev": "DEBUG=hackday:* nodemon ./dist/server.js --exec \"node --require 'dotenv/config'\"",
     "test": "jest",
-    "compile:watch": "tsc -p . --watch",
-    "compile": "tsc -p .",
-    "public": "cp -r ./src/public/ ./dist/public/",
+    "build:watch": "tsc -p . --watch",
+    "build": "tsc -p .",
     "clearlogs": "rm -r ./logs",
-    "build": "npm run public && npm run compile",
     "start": "node ./dist/server.js"
   },
   "dependencies": {
