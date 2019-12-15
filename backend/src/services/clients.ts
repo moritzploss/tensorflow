@@ -1,5 +1,5 @@
 export class ClientService {
-  clients: {};
+  clients: { [x: string]: string[] };
 
   constructor() {
     this.clients = {};
@@ -12,10 +12,7 @@ export class ClientService {
   }
 
   removeClient = (clientId: string, userId: string): void => {
-    this.clients[userId] = this.clients[userId].filter((client: string) => client !== clientId);
-    if (!this.hasClients(userId)) {
-      this.removeUser(userId);
-    }
+    this.clients[userId] = this.clients[userId].filter((id: string) => id !== clientId);
   }
 
   removeUser = (userId: string): boolean => delete this.clients[userId]

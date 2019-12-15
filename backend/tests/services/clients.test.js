@@ -35,7 +35,6 @@ describe('the clients service remove function', () => {
   it('should remove a client from a users list', () => {
     clients.addClient(clientId, userId);
     clients.removeClient(clientId, userId);
-    expect(clients.clients).not.haveOwnProperty(userId);
     expect(clients.getClientsByUserId(userId)).not.contains(clientId);
   });
 });

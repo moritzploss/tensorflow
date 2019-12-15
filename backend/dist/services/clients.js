@@ -15,10 +15,7 @@ var ClientService = /** @class */ (function () {
                 ? __spreadArrays(_this.clients[userId], [clientId]) : [clientId];
         };
         this.removeClient = function (clientId, userId) {
-            _this.clients[userId] = _this.clients[userId].filter(function (client) { return client !== clientId; });
-            if (!_this.hasClients(userId)) {
-                _this.removeUser(userId);
-            }
+            _this.clients[userId] = _this.clients[userId].filter(function (id) { return id !== clientId; });
         };
         this.removeUser = function (userId) { return delete _this.clients[userId]; };
         this.hasClients = function (userId) { return (Boolean(_this.getClientsByUserId(userId).length)); };
