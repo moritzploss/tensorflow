@@ -6,9 +6,10 @@ import expressWs = require('express-ws');
 const wsInstance = expressWs(express());
 const socketsRouter = express.Router();
 
-wsInstance.getWss().on('connection', wsController.onConnection);
+wsInstance.getWss().on('connection', (ws) => console.log('opened'));
 
-socketsRouter.ws('clients/:id', (ws) => {
+socketsRouter.ws('/clients/:id', (ws, req) => {
+  console.log(req.params.id);
   ws.on('message', wsController.onMessage);
   ws.on('close', wsController.onClose);
 });

@@ -5,8 +5,9 @@ var express = require("express");
 var expressWs = require("express-ws");
 var wsInstance = expressWs(express());
 var socketsRouter = express.Router();
-wsInstance.getWss().on('connection', wsController.onConnection);
-socketsRouter.ws('clients/:id', function (ws) {
+wsInstance.getWss().on('connection', function (ws) { return console.log('opened'); });
+socketsRouter.ws('/clients/:id', function (ws, req) {
+    console.log(req.params.id);
     ws.on('message', wsController.onMessage);
     ws.on('close', wsController.onClose);
 });

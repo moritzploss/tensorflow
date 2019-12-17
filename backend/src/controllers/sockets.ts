@@ -2,13 +2,13 @@ import { logger } from '../logging';
 
 export const onConnection = (ws, req) => {
   logger.info('connection opened');
-  ws.send('welcome');
+  return ws.send('welcome');
 };
 
 export const onMessage = (ws, req) => {
-  logger.info('message received');
+  return logger.info('message received');
 };
 
 export const onClose = (ws, req) => {
-  logger.info('connection closed');
+  return logger.info('connection closed');
 };
