@@ -12,6 +12,7 @@
     "public",
     "typings/browser.d.ts",
     "typings/browser/**",
-    "src/**.test.ts"
+    "src/**.test.ts",
+    "client"
   ],
 }
