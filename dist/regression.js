@@ -40,9 +40,9 @@ require('@tensorflow/tfjs-node-gpu');
 var tf = require("@tensorflow/tfjs");
 var node_fetch_1 = require("node-fetch");
 var isComplete = function (car) { return (car.mpg != null && car.horsepower != null); };
-var toCar = function (car) { return ({
-    mpg: Number(car.Miles_per_Gallon),
-    horsepower: Number(car.Horsepower),
+var toCar = function (carData) { return ({
+    mpg: Number(carData.Miles_per_Gallon),
+    horsepower: Number(carData.Horsepower),
 }); };
 var getData = function () { return __awaiter(void 0, void 0, void 0, function () {
     var carsDataReq, carsData;
@@ -70,12 +70,11 @@ var normalize = function (tensor) {
     var min = tensor.min();
     var max = tensor.max();
     var normTensor = tensor.sub(min).div(max.sub(min));
-    return {
-        min: min,
-        max: max,
-        normTensor: normTensor,
-    };
+    return { min: min, max: max, normTensor: normTensor };
 };
+var unNormalize = function (tensor, min, max) { return tensor
+    .mul(max.sub(min))
+    .add(min); };
 var convertToTensor = function (cars) { return (tf.tidy(function () {
     tf.util.shuffle(cars);
     var inputs = cars.map(function (car) { return car.horsepower; });
@@ -107,9 +106,6 @@ var trainModel = function (model, inputs, labels) { return __awaiter(void 0, voi
             })];
     });
 }); };
-var unNormalize = function (tensor, min, max) { return tensor
-    .mul(max.sub(min))
-    .add(min); };
 var applyModel = function (model, inputs) { return model.predict(inputs); };
 var run = function () { return __awaiter(void 0, void 0, void 0, function () {
     var data, _a, normInputs, inputMax, inputMin, normLabels, labelMin, labelMax, model, normValidationInputs, normValidationResults, validationInputs, validationResults;

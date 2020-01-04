@@ -16,9 +16,9 @@ interface CarData {
 
 const isComplete = (car: Car): boolean => (car.mpg != null && car.horsepower != null);
 
-const toCar = (car: CarData): Car => ({
-  mpg: Number(car.Miles_per_Gallon),
-  horsepower: Number(car.Horsepower),
+const toCar = (carData: CarData): Car => ({
+  mpg: Number(carData.Miles_per_Gallon),
+  horsepower: Number(carData.Horsepower),
 });
 
 const getData = async (): Promise<Car[]> => {
@@ -41,12 +41,12 @@ const normalize = (tensor: tf.Tensor) => {
   const max = tensor.max();
   const normTensor = tensor.sub(min).div(max.sub(min));
 
-  return {
-    min,
-    max,
-    normTensor,
-  };
+  return { min, max, normTensor };
 };
+
+const unNormalize = (tensor: tf.Tensor, min: tf.Tensor, max: tf.Tensor): tf.Tensor => tensor
+  .mul(max.sub(min))
+  .add(min);
 
 const convertToTensor = (cars: Car[]) => (
   tf.tidy(() => {
@@ -86,9 +86,6 @@ const trainModel = async (model: tf.Sequential, inputs: tf.Tensor, labels: tf.Te
   });
 };
 
-const unNormalize = (tensor: tf.Tensor, min: tf.Tensor, max: tf.Tensor): tf.Tensor => tensor
-  .mul(max.sub(min))
-  .add(min);
 
 const applyModel = (model, inputs: tf.Tensor): tf.Tensor<tf.Rank> => model.predict(inputs);
 
