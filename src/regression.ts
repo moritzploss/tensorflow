@@ -1,3 +1,5 @@
+require('@tensorflow/tfjs-node-gpu');
+
 import * as tf from '@tensorflow/tfjs';
 import * as tfvis from '@tensorflow/tfjs-vis';
 import fetch from 'node-fetch';
@@ -27,13 +29,6 @@ const getData = async (): Promise<Car[]> => {
     .filter(isComplete);
 };
 
-const run = async () => {
-  const data = await getData();
-
-
-  // More code will be added below
-};
-
 const createSequentialModel = (): tf.Sequential => {
   const model = tf.sequential();
   model.add(tf.layers.dense({ inputShape: [1], units: 1, useBias: true }));
@@ -41,8 +36,17 @@ const createSequentialModel = (): tf.Sequential => {
   return model;
 };
 
-run();
-const model = createSequentialModel();
+const normalize = (tensor: tf.Tensor) => {
+  const min = tensor.min();
+  const max = tensor.max();
+  const normTensor = tensor.sub(min).div(max.sub(min));
+
+  return {
+    min,
+    max,
+    normTensor,
+  };
+};
 
 const convertToTensor = (cars: Car[]) => (
   tf.tidy(() => {
@@ -54,43 +58,52 @@ const convertToTensor = (cars: Car[]) => (
     const inputTensor = tf.tensor2d(inputs, [inputs.length, 1]);
     const labelTensor = tf.tensor2d(labels, [labels.length, 1]);
 
-    const inputMax = inputTensor.max();
-    const inputMin = inputTensor.min();
-    const labelMax = labelTensor.max();
-    const labelMin = labelTensor.min();
-
-    const normalizedInputs = inputTensor.sub(inputMin).div(inputMax.sub(inputMin));
-    const normalizedLabels = labelTensor.sub(labelMin).div(labelMax.sub(labelMin));
+    const { normTensor: normInputs, min: inputMin, max: inputMax } = normalize(inputTensor);
+    const { normTensor: normLabels, min: labelMin, max: labelMax } = normalize(labelTensor);
 
     return {
-      inputs: normalizedInputs,
-      labels: normalizedLabels,
-      inputMax,
       inputMin,
-      labelMax,
+      inputMax,
+      normInputs,
       labelMin,
+      labelMax,
+      normLabels,
     };
   })
 );
 
-const trainModel = async (model, inputs, labels) => {
+const trainModel = async (model: tf.Sequential, inputs: tf.Tensor, labels: tf.Tensor): Promise<tf.History> => {
   model.compile({
     optimizer: tf.train.adam(),
     loss: tf.losses.meanSquaredError,
     metrics: ['mse'],
   });
 
-  const batchSize = 32;
-  const epochs = 50;
-
   return model.fit(inputs, labels, {
-    batchSize,
-    epochs,
+    batchSize: 32,
+    epochs: 50,
     shuffle: true,
-    callbacks: tfvis.show.fitCallbacks(
-      { name: 'Training Performance' },
-      ['loss', 'mse'],
-      { height: 200, callbacks: ['onEpochEnd'] },
-    ),
   });
 };
+
+const unNormalize = (tensor: tf.Tensor, min: tf.Tensor, max: tf.Tensor): tf.Tensor => tensor
+  .mul(max.sub(min))
+  .add(min);
+
+const applyModel = (model, inputs: tf.Tensor): tf.Tensor<tf.Rank> => model.predict(inputs);
+
+const run = async (): Promise<void> => {
+  const data = await getData();
+  const { normInputs, inputMax, inputMin, normLabels, labelMin, labelMax } = convertToTensor(data);
+
+  const model = createSequentialModel();
+  await trainModel(model, normInputs, normLabels);
+
+  const normValidationInputs = tf.linspace(0, 1, 100).reshape([100, 1]);
+  const normValidationResults = applyModel(model, normValidationInputs);
+  const validationInputs = unNormalize(normValidationInputs, inputMin, inputMax).dataSync();
+  const validationResults = unNormalize(normValidationResults, labelMin, labelMax).dataSync();
+  console.log(validationInputs[50], validationResults[50]);
+};
+
+run();
