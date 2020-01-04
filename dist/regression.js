@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var tf = require("@tensorflow/tfjs");
 var tfvis = require("@tensorflow/tfjs-vis");
 var node_fetch_1 = require("node-fetch");
 var isComplete = function (car) { return (car.mpg != null && car.horsepower != null); };
@@ -60,23 +61,60 @@ var getData = function () { return __awaiter(void 0, void 0, void 0, function ()
     });
 }); };
 var run = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var data, values;
+    var data;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, getData()];
             case 1:
                 data = _a.sent();
-                values = data.map(function (car) { return ({
-                    x: car.horsepower,
-                    y: car.mpg,
-                }); });
-                tfvis.render.scatterplot({ name: 'Horsepower v MPG' }, { values: values }, {
-                    xLabel: 'Horsepower',
-                    yLabel: 'MPG',
-                    height: 300,
-                });
                 return [2 /*return*/];
         }
     });
 }); };
+var createSequentialModel = function () {
+    var model = tf.sequential();
+    model.add(tf.layers.dense({ inputShape: [1], units: 1, useBias: true }));
+    model.add(tf.layers.dense({ units: 1, useBias: true }));
+    return model;
+};
 run();
+var model = createSequentialModel();
+var convertToTensor = function (cars) { return (tf.tidy(function () {
+    tf.util.shuffle(cars);
+    var inputs = cars.map(function (car) { return car.horsepower; });
+    var labels = cars.map(function (car) { return car.mpg; });
+    var inputTensor = tf.tensor2d(inputs, [inputs.length, 1]);
+    var labelTensor = tf.tensor2d(labels, [labels.length, 1]);
+    var inputMax = inputTensor.max();
+    var inputMin = inputTensor.min();
+    var labelMax = labelTensor.max();
+    var labelMin = labelTensor.min();
+    var normalizedInputs = inputTensor.sub(inputMin).div(inputMax.sub(inputMin));
+    var normalizedLabels = labelTensor.sub(labelMin).div(labelMax.sub(labelMin));
+    return {
+        inputs: normalizedInputs,
+        labels: normalizedLabels,
+        inputMax: inputMax,
+        inputMin: inputMin,
+        labelMax: labelMax,
+        labelMin: labelMin,
+    };
+})); };
+var trainModel = function (model, inputs, labels) { return __awaiter(void 0, void 0, void 0, function () {
+    var batchSize, epochs;
+    return __generator(this, function (_a) {
+        model.compile({
+            optimizer: tf.train.adam(),
+            loss: tf.losses.meanSquaredError,
+            metrics: ['mse'],
+        });
+        batchSize = 32;
+        epochs = 50;
+        return [2 /*return*/, model.fit(inputs, labels, {
+                batchSize: batchSize,
+                epochs: epochs,
+                shuffle: true,
+                callbacks: tfvis.show.fitCallbacks({ name: 'Training Performance' }, ['loss', 'mse'], { height: 200, callbacks: ['onEpochEnd'] }),
+            })];
+    });
+}); };
