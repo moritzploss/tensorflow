@@ -36,10 +36,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-require('@tensorflow/tfjs-node-gpu');
-var tf = require("@tensorflow/tfjs");
+var tf = require("@tensorflow/tfjs-node");
 var node_fetch_1 = require("node-fetch");
-var isComplete = function (car) { return (car.mpg != null && car.horsepower != null); };
+var tensorBoardPath = './tensorboard/regression/';
+var dataIsComplete = function (car) { return (car.mpg != null && car.horsepower != null); };
 var toCar = function (carData) { return ({
     mpg: Number(carData.Miles_per_Gallon),
     horsepower: Number(carData.Horsepower),
@@ -56,7 +56,20 @@ var getData = function () { return __awaiter(void 0, void 0, void 0, function ()
                 carsData = _a.sent();
                 return [2 /*return*/, carsData
                         .map(toCar)
-                        .filter(isComplete)];
+                        .filter(dataIsComplete)];
+        }
+    });
+}); };
+var loadInputs = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var data, horsepowers, mpgs;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, getData()];
+            case 1:
+                data = _a.sent();
+                horsepowers = data.map(function (car) { return car.horsepower; });
+                mpgs = data.map(function (car) { return car.mpg; });
+                return [2 /*return*/, { horsepowers: horsepowers, mpgs: mpgs }];
         }
     });
 }); };
@@ -75,22 +88,11 @@ var normalize = function (tensor) {
 var unNormalize = function (tensor, min, max) { return tensor
     .mul(max.sub(min))
     .add(min); };
-var convertToTensor = function (cars) { return (tf.tidy(function () {
-    tf.util.shuffle(cars);
-    var inputs = cars.map(function (car) { return car.horsepower; });
-    var labels = cars.map(function (car) { return car.mpg; });
-    var inputTensor = tf.tensor2d(inputs, [inputs.length, 1]);
-    var labelTensor = tf.tensor2d(labels, [labels.length, 1]);
-    var _a = normalize(inputTensor), normInputs = _a.normTensor, inputMin = _a.min, inputMax = _a.max;
-    var _b = normalize(labelTensor), normLabels = _b.normTensor, labelMin = _b.min, labelMax = _b.max;
-    return {
-        inputMin: inputMin,
-        inputMax: inputMax,
-        normInputs: normInputs,
-        labelMin: labelMin,
-        labelMax: labelMax,
-        normLabels: normLabels,
-    };
+var toNormTensor = function (dataArray) { return (tf.tidy(function () {
+    tf.util.shuffle(dataArray);
+    var tensor = tf.tensor2d(dataArray, [dataArray.length, 1]);
+    var _a = normalize(tensor), normTensor = _a.normTensor, min = _a.min, max = _a.max;
+    return { normTensor: normTensor, min: min, max: max };
 })); };
 var trainModel = function (model, inputs, labels) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
@@ -103,24 +105,32 @@ var trainModel = function (model, inputs, labels) { return __awaiter(void 0, voi
                 batchSize: 32,
                 epochs: 50,
                 shuffle: true,
+                callbacks: tf.node.tensorBoard(tensorBoardPath),
             })];
     });
 }); };
 var applyModel = function (model, inputs) { return model.predict(inputs); };
 var run = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var data, _a, normInputs, inputMax, inputMin, normLabels, labelMin, labelMax, model, normValidationInputs, normValidationResults, validationInputs, validationResults;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
-            case 0: return [4 /*yield*/, getData()];
+    var _a, horsepowers, mpgs, _b, normInputs, inputMax, inputMin, _c, normLabels, labelMin, labelMax, model, loadedModel, normValidationInputs, normValidationResults, validationInputs, validationResults;
+    return __generator(this, function (_d) {
+        switch (_d.label) {
+            case 0: return [4 /*yield*/, loadInputs()];
             case 1:
-                data = _b.sent();
-                _a = convertToTensor(data), normInputs = _a.normInputs, inputMax = _a.inputMax, inputMin = _a.inputMin, normLabels = _a.normLabels, labelMin = _a.labelMin, labelMax = _a.labelMax;
+                _a = _d.sent(), horsepowers = _a.horsepowers, mpgs = _a.mpgs;
+                _b = toNormTensor(horsepowers), normInputs = _b.normTensor, inputMax = _b.min, inputMin = _b.max;
+                _c = toNormTensor(mpgs), normLabels = _c.normTensor, labelMin = _c.min, labelMax = _c.max;
                 model = createSequentialModel();
                 return [4 /*yield*/, trainModel(model, normInputs, normLabels)];
             case 2:
-                _b.sent();
+                _d.sent();
+                return [4 /*yield*/, model.save('file://./models/regression')];
+            case 3:
+                _d.sent();
+                return [4 /*yield*/, tf.loadLayersModel('file://./models/regression/model.json')];
+            case 4:
+                loadedModel = _d.sent();
                 normValidationInputs = tf.linspace(0, 1, 100).reshape([100, 1]);
-                normValidationResults = applyModel(model, normValidationInputs);
+                normValidationResults = applyModel(loadedModel, normValidationInputs);
                 validationInputs = unNormalize(normValidationInputs, inputMin, inputMax).dataSync();
                 validationResults = unNormalize(normValidationResults, labelMin, labelMax).dataSync();
                 console.log(validationInputs[50], validationResults[50]);

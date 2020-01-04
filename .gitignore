@@ -7,7 +7,7 @@ yarn-error.log*
 
 data
 client
-
+tensorboard
 # Runtime data
 pids
 *.pid
