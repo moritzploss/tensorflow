@@ -39,7 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tf = require("@tensorflow/tfjs-node");
 var data_1 = require("./services/data");
 var model_1 = require("./services/model");
-var normalize_1 = require("./tensors/normalize");
+var tensors_1 = require("./util/tensors");
 var createTrainedRegressionModel = function (logPath) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, horsepowers, mpgs, _b, normInputs, inputMax, inputMin, _c, normLabels, labelMin, labelMax, metaData, model;
     return __generator(this, function (_d) {
@@ -47,8 +47,8 @@ var createTrainedRegressionModel = function (logPath) { return __awaiter(void 0,
             case 0: return [4 /*yield*/, data_1.loadInputs()];
             case 1:
                 _a = _d.sent(), horsepowers = _a.horsepowers, mpgs = _a.mpgs;
-                _b = normalize_1.toNormTensor(horsepowers), normInputs = _b.normTensor, inputMax = _b.min, inputMin = _b.max;
-                _c = normalize_1.toNormTensor(mpgs), normLabels = _c.normTensor, labelMin = _c.min, labelMax = _c.max;
+                _b = tensors_1.toNormTensor(horsepowers), normInputs = _b.normTensor, inputMax = _b.min, inputMin = _b.max;
+                _c = tensors_1.toNormTensor(mpgs), normLabels = _c.normTensor, labelMin = _c.min, labelMax = _c.max;
                 metaData = { inputMin: inputMin, inputMax: inputMax, labelMin: labelMin, labelMax: labelMax };
                 model = model_1.createLayersModel();
                 return [4 /*yield*/, model_1.trainModel(model, normInputs, normLabels, logPath)];
@@ -70,8 +70,8 @@ var validateModel = function (path) { return __awaiter(void 0, void 0, void 0, f
                 _a = _b.sent(), inputMin = _a.inputMin, inputMax = _a.inputMax, labelMin = _a.labelMin, labelMax = _a.labelMax;
                 normValidationInputs = tf.linspace(0, 1, 100).reshape([100, 1]);
                 normValidationResults = model_1.applyModel(model, normValidationInputs);
-                validationInputs = normalize_1.unNormalize(normValidationInputs, inputMin, inputMax).dataSync();
-                validationResults = normalize_1.unNormalize(normValidationResults, labelMin, labelMax).dataSync();
+                validationInputs = tensors_1.unNormalize(normValidationInputs, inputMin, inputMax).dataSync();
+                validationResults = tensors_1.unNormalize(normValidationResults, labelMin, labelMax).dataSync();
                 return [2 /*return*/, { validationInputs: validationInputs, validationResults: validationResults }];
         }
     });

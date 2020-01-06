@@ -4,7 +4,7 @@ import { Model, ValidationData } from './types';
 
 import { loadInputs } from './services/data';
 import { createLayersModel, applyModel, saveModel, trainModel, getModelMetaData } from './services/model';
-import { unNormalize, toNormTensor } from './tensors/normalize';
+import { unNormalize, toNormTensor } from './util/tensors';
 
 const createTrainedRegressionModel = async (logPath: string): Promise<Model> => {
   const { horsepowers, mpgs } = await loadInputs();
