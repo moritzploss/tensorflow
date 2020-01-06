@@ -37,105 +37,61 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var tf = require("@tensorflow/tfjs-node");
-var node_fetch_1 = require("node-fetch");
-var tensorBoardPath = './tensorboard/regression/';
-var dataIsComplete = function (car) { return (car.mpg != null && car.horsepower != null); };
-var toCar = function (carData) { return ({
-    mpg: Number(carData.Miles_per_Gallon),
-    horsepower: Number(carData.Horsepower),
-}); };
-var getData = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var carsDataReq, carsData;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, node_fetch_1.default('https://storage.googleapis.com/tfjs-tutorials/carsData.json')];
-            case 1:
-                carsDataReq = _a.sent();
-                return [4 /*yield*/, carsDataReq.json()];
-            case 2:
-                carsData = _a.sent();
-                return [2 /*return*/, carsData
-                        .map(toCar)
-                        .filter(dataIsComplete)];
-        }
-    });
-}); };
-var loadInputs = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var data, horsepowers, mpgs;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, getData()];
-            case 1:
-                data = _a.sent();
-                horsepowers = data.map(function (car) { return car.horsepower; });
-                mpgs = data.map(function (car) { return car.mpg; });
-                return [2 /*return*/, { horsepowers: horsepowers, mpgs: mpgs }];
-        }
-    });
-}); };
-var createSequentialModel = function () {
-    var model = tf.sequential();
-    model.add(tf.layers.dense({ inputShape: [1], units: 1, useBias: true }));
-    model.add(tf.layers.dense({ units: 1, useBias: true }));
-    return model;
-};
-var normalize = function (tensor) {
-    var min = tensor.min();
-    var max = tensor.max();
-    var normTensor = tensor.sub(min).div(max.sub(min));
-    return { min: min, max: max, normTensor: normTensor };
-};
-var unNormalize = function (tensor, min, max) { return tensor
-    .mul(max.sub(min))
-    .add(min); };
-var toNormTensor = function (dataArray) { return (tf.tidy(function () {
-    tf.util.shuffle(dataArray);
-    var tensor = tf.tensor2d(dataArray, [dataArray.length, 1]);
-    var _a = normalize(tensor), normTensor = _a.normTensor, min = _a.min, max = _a.max;
-    return { normTensor: normTensor, min: min, max: max };
-})); };
-var trainModel = function (model, inputs, labels) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        model.compile({
-            optimizer: tf.train.adam(),
-            loss: tf.losses.meanSquaredError,
-            metrics: ['mse'],
-        });
-        return [2 /*return*/, model.fit(inputs, labels, {
-                batchSize: 32,
-                epochs: 50,
-                shuffle: true,
-                callbacks: tf.node.tensorBoard(tensorBoardPath),
-            })];
-    });
-}); };
-var applyModel = function (model, inputs) { return model.predict(inputs); };
-var run = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, horsepowers, mpgs, _b, normInputs, inputMax, inputMin, _c, normLabels, labelMin, labelMax, model, loadedModel, normValidationInputs, normValidationResults, validationInputs, validationResults;
+var data_1 = require("./services/data");
+var model_1 = require("./services/model");
+var normalize_1 = require("./tensors/normalize");
+var createTrainedRegressionModel = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, horsepowers, mpgs, _b, normInputs, inputMax, inputMin, _c, normLabels, labelMin, labelMax, metaData, model;
     return __generator(this, function (_d) {
         switch (_d.label) {
-            case 0: return [4 /*yield*/, loadInputs()];
+            case 0: return [4 /*yield*/, data_1.loadInputs()];
             case 1:
                 _a = _d.sent(), horsepowers = _a.horsepowers, mpgs = _a.mpgs;
-                _b = toNormTensor(horsepowers), normInputs = _b.normTensor, inputMax = _b.min, inputMin = _b.max;
-                _c = toNormTensor(mpgs), normLabels = _c.normTensor, labelMin = _c.min, labelMax = _c.max;
-                model = createSequentialModel();
-                return [4 /*yield*/, trainModel(model, normInputs, normLabels)];
+                _b = normalize_1.toNormTensor(horsepowers), normInputs = _b.normTensor, inputMax = _b.min, inputMin = _b.max;
+                _c = normalize_1.toNormTensor(mpgs), normLabels = _c.normTensor, labelMin = _c.min, labelMax = _c.max;
+                metaData = { inputMin: inputMin, inputMax: inputMax, labelMin: labelMin, labelMax: labelMax };
+                model = model_1.createSequentialModel();
+                return [4 /*yield*/, model_1.trainModel(model, normInputs, normLabels, './tensorboard/regression/')];
             case 2:
                 _d.sent();
-                return [4 /*yield*/, model.save('file://./models/regression')];
-            case 3:
-                _d.sent();
-                return [4 /*yield*/, tf.loadLayersModel('file://./models/regression/model.json')];
-            case 4:
-                loadedModel = _d.sent();
+                return [2 /*return*/, { model: model, metaData: metaData }];
+        }
+    });
+}); };
+var validateModel = function (path) { return __awaiter(void 0, void 0, void 0, function () {
+    var model, _a, inputMin, inputMax, labelMin, labelMax, normValidationInputs, normValidationResults, validationInputs, validationResults;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0: return [4 /*yield*/, tf.loadLayersModel("file://" + path + "/model.json")];
+            case 1:
+                model = _b.sent();
+                return [4 /*yield*/, model_1.getModelMetaData(path)];
+            case 2:
+                _a = _b.sent(), inputMin = _a.inputMin, inputMax = _a.inputMax, labelMin = _a.labelMin, labelMax = _a.labelMax;
                 normValidationInputs = tf.linspace(0, 1, 100).reshape([100, 1]);
-                normValidationResults = applyModel(loadedModel, normValidationInputs);
-                validationInputs = unNormalize(normValidationInputs, inputMin, inputMax).dataSync();
-                validationResults = unNormalize(normValidationResults, labelMin, labelMax).dataSync();
+                normValidationResults = model_1.applyModel(model, normValidationInputs);
+                validationInputs = normalize_1.unNormalize(normValidationInputs, inputMin, inputMax).dataSync();
+                validationResults = normalize_1.unNormalize(normValidationResults, labelMin, labelMax).dataSync();
+                return [2 /*return*/, { validationInputs: validationInputs, validationResults: validationResults }];
+        }
+    });
+}); };
+var createAndValidateModel = function (path) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, model, metaData, _b, validationInputs, validationResults;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
+            case 0: return [4 /*yield*/, createTrainedRegressionModel()];
+            case 1:
+                _a = _c.sent(), model = _a.model, metaData = _a.metaData;
+                return [4 /*yield*/, model_1.saveModel(model, metaData, path)];
+            case 2:
+                _c.sent();
+                return [4 /*yield*/, validateModel(path)];
+            case 3:
+                _b = _c.sent(), validationInputs = _b.validationInputs, validationResults = _b.validationResults;
                 console.log(validationInputs[50], validationResults[50]);
                 return [2 /*return*/];
         }
     });
 }); };
-run();
+createAndValidateModel('./models/regression');
