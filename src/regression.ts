@@ -1,23 +1,23 @@
 import * as tf from '@tensorflow/tfjs-node';
 
-import { Model } from './types';
+import { Model, ValidationData } from './types';
 
-import { loadInputs  } from './services/data';
-import { createSequentialModel, applyModel, saveModel, trainModel, getModelMetaData } from './services/model';
+import { loadInputs } from './services/data';
+import { createLayersModel, applyModel, saveModel, trainModel, getModelMetaData } from './services/model';
 import { unNormalize, toNormTensor } from './tensors/normalize';
 
-const createTrainedRegressionModel = async (): Promise<Model> => {
+const createTrainedRegressionModel = async (logPath: string): Promise<Model> => {
   const { horsepowers, mpgs } = await loadInputs();
   const { normTensor: normInputs, min: inputMax, max: inputMin } = toNormTensor(horsepowers);
   const { normTensor: normLabels, min: labelMin, max: labelMax } = toNormTensor(mpgs);
   const metaData = { inputMin, inputMax, labelMin, labelMax };
 
-  const model = createSequentialModel();
-  await trainModel(model, normInputs, normLabels, './tensorboard/regression/');
+  const model = createLayersModel();
+  await trainModel(model, normInputs, normLabels, logPath);
   return { model, metaData };
 };
 
-const validateModel = async (path: string) => {
+const validateModel = async (path: string): Promise<ValidationData> => {
   const model = await tf.loadLayersModel(`file://${path}/model.json`);
   const { inputMin, inputMax, labelMin, labelMax } = await getModelMetaData(path);
 
@@ -28,11 +28,11 @@ const validateModel = async (path: string) => {
   return { validationInputs, validationResults };
 };
 
-const createAndValidateModel = async (path: string): Promise<void> => {
-  const { model, metaData } = await createTrainedRegressionModel();
-  await saveModel(model, metaData, path);
-  const { validationInputs, validationResults } = await validateModel(path);
+const createAndValidateModel = async (): Promise<void> => {
+  const { model, metaData } = await createTrainedRegressionModel('./tensorboard/regression/');
+  await saveModel(model, metaData, './models/regression');
+  const { validationInputs, validationResults } = await validateModel('./models/regression');
   console.log(validationInputs[50], validationResults[50]);
 };
 
-createAndValidateModel('./models/regression');
+createAndValidateModel();

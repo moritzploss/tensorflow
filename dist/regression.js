@@ -40,7 +40,7 @@ var tf = require("@tensorflow/tfjs-node");
 var data_1 = require("./services/data");
 var model_1 = require("./services/model");
 var normalize_1 = require("./tensors/normalize");
-var createTrainedRegressionModel = function () { return __awaiter(void 0, void 0, void 0, function () {
+var createTrainedRegressionModel = function (logPath) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, horsepowers, mpgs, _b, normInputs, inputMax, inputMin, _c, normLabels, labelMin, labelMax, metaData, model;
     return __generator(this, function (_d) {
         switch (_d.label) {
@@ -50,8 +50,8 @@ var createTrainedRegressionModel = function () { return __awaiter(void 0, void 0
                 _b = normalize_1.toNormTensor(horsepowers), normInputs = _b.normTensor, inputMax = _b.min, inputMin = _b.max;
                 _c = normalize_1.toNormTensor(mpgs), normLabels = _c.normTensor, labelMin = _c.min, labelMax = _c.max;
                 metaData = { inputMin: inputMin, inputMax: inputMax, labelMin: labelMin, labelMax: labelMax };
-                model = model_1.createSequentialModel();
-                return [4 /*yield*/, model_1.trainModel(model, normInputs, normLabels, './tensorboard/regression/')];
+                model = model_1.createLayersModel();
+                return [4 /*yield*/, model_1.trainModel(model, normInputs, normLabels, logPath)];
             case 2:
                 _d.sent();
                 return [2 /*return*/, { model: model, metaData: metaData }];
@@ -76,17 +76,17 @@ var validateModel = function (path) { return __awaiter(void 0, void 0, void 0, f
         }
     });
 }); };
-var createAndValidateModel = function (path) { return __awaiter(void 0, void 0, void 0, function () {
+var createAndValidateModel = function () { return __awaiter(void 0, void 0, void 0, function () {
     var _a, model, metaData, _b, validationInputs, validationResults;
     return __generator(this, function (_c) {
         switch (_c.label) {
-            case 0: return [4 /*yield*/, createTrainedRegressionModel()];
+            case 0: return [4 /*yield*/, createTrainedRegressionModel('./tensorboard/regression/')];
             case 1:
                 _a = _c.sent(), model = _a.model, metaData = _a.metaData;
-                return [4 /*yield*/, model_1.saveModel(model, metaData, path)];
+                return [4 /*yield*/, model_1.saveModel(model, metaData, './models/regression')];
             case 2:
                 _c.sent();
-                return [4 /*yield*/, validateModel(path)];
+                return [4 /*yield*/, validateModel('./models/regression')];
             case 3:
                 _b = _c.sent(), validationInputs = _b.validationInputs, validationResults = _b.validationResults;
                 console.log(validationInputs[50], validationResults[50]);
@@ -94,4 +94,4 @@ var createAndValidateModel = function (path) { return __awaiter(void 0, void 0, 
         }
     });
 }); };
-createAndValidateModel('./models/regression');
+createAndValidateModel();

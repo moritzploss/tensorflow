@@ -27,3 +27,8 @@ export interface NormTensorData {
   max: tf.Tensor;
   normTensor: tf.Tensor;
 }
+
+export interface ValidationData {
+  validationInputs: Float32Array | Int32Array | Uint8Array;
+  validationResults: Float32Array | Int32Array | Uint8Array;
+}

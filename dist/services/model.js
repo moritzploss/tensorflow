@@ -38,16 +38,34 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var tf = require("@tensorflow/tfjs-node");
 var fs = require("fs");
-var util = require("util");
-var createSequentialModel = function () {
+var files_1 = require("../util/files");
+var applyModel = function (model, inputs) { return model.predict(inputs); };
+exports.applyModel = applyModel;
+var createLayersModel = function () {
     var model = tf.sequential();
     model.add(tf.layers.dense({ inputShape: [1], units: 1, useBias: true }));
     model.add(tf.layers.dense({ units: 1, useBias: true }));
     return model;
 };
-exports.createSequentialModel = createSequentialModel;
-var applyModel = function (model, inputs) { return model.predict(inputs); };
-exports.applyModel = applyModel;
+exports.createLayersModel = createLayersModel;
+var getModelMetaData = function (path) { return __awaiter(void 0, void 0, void 0, function () {
+    var metaBuffer, metaData;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, files_1.readFile(path + "/meta.json")];
+            case 1:
+                metaBuffer = _a.sent();
+                metaData = JSON.parse(metaBuffer.toString());
+                return [2 /*return*/, {
+                        inputMin: tf.tensor(metaData.inputMin),
+                        inputMax: tf.tensor(metaData.inputMax),
+                        labelMin: tf.tensor(metaData.labelMin),
+                        labelMax: tf.tensor(metaData.labelMax),
+                    }];
+        }
+    });
+}); };
+exports.getModelMetaData = getModelMetaData;
 var saveModel = function (model, metaData, path) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -81,25 +99,3 @@ var trainModel = function (model, inputs, labels, logPath) { return __awaiter(vo
     });
 }); };
 exports.trainModel = trainModel;
-var readFile = util.promisify(fs.readFile);
-var getModelMetaData = function (path) { return __awaiter(void 0, void 0, void 0, function () {
-    var metaBuffer, metaData;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                console.log('trying to read file');
-                return [4 /*yield*/, readFile(path + "/meta.json")];
-            case 1:
-                metaBuffer = _a.sent();
-                console.log('read file');
-                metaData = JSON.parse(metaBuffer.toString());
-                return [2 /*return*/, {
-                        inputMin: tf.tensor(metaData.inputMin),
-                        inputMax: tf.tensor(metaData.inputMax),
-                        labelMin: tf.tensor(metaData.labelMin),
-                        labelMax: tf.tensor(metaData.labelMax),
-                    }];
-        }
-    });
-}); };
-exports.getModelMetaData = getModelMetaData;

@@ -1,17 +1,29 @@
 import * as tf from '@tensorflow/tfjs-node';
 import * as fs from 'fs';
-import * as util from 'util';
 
 import { ModelMetaData } from '../types';
 
-const createSequentialModel = (): tf.Sequential => {
+import { readFile } from '../util/files';
+
+const applyModel = (model, inputs: tf.Tensor): tf.Tensor<tf.Rank> => model.predict(inputs);
+
+const createLayersModel = (): tf.LayersModel => {
   const model = tf.sequential();
   model.add(tf.layers.dense({ inputShape: [1], units: 1, useBias: true }));
   model.add(tf.layers.dense({ units: 1, useBias: true }));
   return model;
 };
 
-const applyModel = (model, inputs: tf.Tensor): tf.Tensor<tf.Rank> => model.predict(inputs);
+const getModelMetaData = async (path: string): Promise<ModelMetaData> => {
+  const metaBuffer = await readFile(`${path}/meta.json`);
+  const metaData = JSON.parse(metaBuffer.toString());
+  return {
+    inputMin: tf.tensor(metaData.inputMin),
+    inputMax: tf.tensor(metaData.inputMax),
+    labelMin: tf.tensor(metaData.labelMin),
+    labelMax: tf.tensor(metaData.labelMax),
+  };
+};
 
 const saveModel = async (model: tf.LayersModel, metaData: ModelMetaData, path: string): Promise<void> => {
   await model.save(`file://${path}`);
@@ -23,7 +35,7 @@ const saveModel = async (model: tf.LayersModel, metaData: ModelMetaData, path: s
   }));
 };
 
-const trainModel = async (model: tf.Sequential, inputs: tf.Tensor, labels: tf.Tensor, logPath: string): Promise<tf.History> => {
+const trainModel = async (model: tf.LayersModel, inputs: tf.Tensor, labels: tf.Tensor, logPath: string): Promise<tf.History> => {
   model.compile({
     optimizer: tf.train.adam(),
     loss: tf.losses.meanSquaredError,
@@ -38,24 +50,9 @@ const trainModel = async (model: tf.Sequential, inputs: tf.Tensor, labels: tf.Te
   });
 };
 
-const readFile = util.promisify(fs.readFile);
-
-const getModelMetaData = async (path: string): Promise<ModelMetaData> => {
-  console.log('trying to read file');
-  const metaBuffer = await readFile(`${path}/meta.json`);
-  console.log('read file');
-  const metaData = JSON.parse(metaBuffer.toString());
-  return {
-    inputMin: tf.tensor(metaData.inputMin),
-    inputMax: tf.tensor(metaData.inputMax),
-    labelMin: tf.tensor(metaData.labelMin),
-    labelMax: tf.tensor(metaData.labelMax),
-  };
-};
-
 export {
   applyModel,
-  createSequentialModel,
+  createLayersModel,
   getModelMetaData,
   saveModel,
   trainModel,
