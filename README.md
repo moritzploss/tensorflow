@@ -2,7 +2,14 @@
 
 ## About
 
-This repo contains small projects built with `TensorFlow`.
+This repo contains small projects built with `TensorFlow`. To run the regression model:
+
+    node dist/regression.js
+
+To visualize the result:
+
+    cd data
+    python3 plot_data.py
 
 ## Data Visualization
 

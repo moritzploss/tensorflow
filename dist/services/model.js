@@ -86,7 +86,7 @@ exports.saveModel = saveModel;
 var trainModel = function (model, inputs, labels, logPath) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         model.compile({
-            optimizer: tf.train.adam(),
+            optimizer: tf.train.adamax(),
             loss: tf.losses.meanSquaredError,
             metrics: ['mse'],
         });

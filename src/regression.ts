@@ -1,4 +1,5 @@
 import * as tf from '@tensorflow/tfjs-node';
+import * as fs from 'fs';
 
 import { Model, ValidationData } from './types';
 
@@ -28,11 +29,22 @@ const validateModel = async (path: string): Promise<ValidationData> => {
   return { validationInputs, validationResults };
 };
 
-const createAndValidateModel = async (): Promise<void> => {
+const createAndValidateModel = async (): Promise<ValidationData> => {
   const { model, metaData } = await createTrainedRegressionModel('./tensorboard/regression/');
   await saveModel(model, metaData, './models/regression');
-  const { validationInputs, validationResults } = await validateModel('./models/regression');
-  console.log(validationInputs[50], validationResults[50]);
+  return validateModel('./models/regression');
 };
 
-createAndValidateModel();
+
+const saveValidationData = ({ validationInputs, validationResults }): void => {
+  fs.writeFile(
+    './data/regressionValidation.json',
+    JSON.stringify({
+      validationInputs: Array.from(validationInputs),
+      validationResults: Array.from(validationResults),
+    }),
+    (err) => console.log(err),
+  );
+};
+
+createAndValidateModel().then(saveValidationData);

@@ -37,7 +37,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var node_fetch_1 = require("node-fetch");
+var fs = require("fs");
 var dataIsComplete = function (car) { return (car.mpg != null && car.horsepower != null); };
+var dataIsNotZero = function (car) { return car.mpg !== 0 && car.horsepower !== 0; };
 var toCar = function (carData) { return ({
     mpg: Number(carData.Miles_per_Gallon),
     horsepower: Number(carData.Horsepower),
@@ -54,12 +56,16 @@ var getData = function () { return __awaiter(void 0, void 0, void 0, function ()
                 carsData = _a.sent();
                 return [2 /*return*/, carsData
                         .map(toCar)
-                        .filter(dataIsComplete)];
+                        .filter(dataIsComplete)
+                        .filter(dataIsNotZero)];
         }
     });
 }); };
+var saveData = function (dataSerializable) {
+    fs.writeFile('./data/regressionInput.json', JSON.stringify(dataSerializable), function (err) { return console.log(err); });
+};
 var loadInputs = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var data, horsepowers, mpgs;
+    var data, horsepowers, mpgs, inputData;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, getData()];
@@ -67,7 +73,9 @@ var loadInputs = function () { return __awaiter(void 0, void 0, void 0, function
                 data = _a.sent();
                 horsepowers = data.map(function (car) { return car.horsepower; });
                 mpgs = data.map(function (car) { return car.mpg; });
-                return [2 /*return*/, { horsepowers: horsepowers, mpgs: mpgs }];
+                inputData = { horsepowers: horsepowers, mpgs: mpgs };
+                saveData(inputData);
+                return [2 /*return*/, inputData];
         }
     });
 }); };

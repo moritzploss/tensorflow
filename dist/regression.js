@@ -37,6 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var tf = require("@tensorflow/tfjs-node");
+var fs = require("fs");
 var data_1 = require("./services/data");
 var model_1 = require("./services/model");
 var tensors_1 = require("./util/tensors");
@@ -77,21 +78,24 @@ var validateModel = function (path) { return __awaiter(void 0, void 0, void 0, f
     });
 }); };
 var createAndValidateModel = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, model, metaData, _b, validationInputs, validationResults;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
+    var _a, model, metaData;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0: return [4 /*yield*/, createTrainedRegressionModel('./tensorboard/regression/')];
             case 1:
-                _a = _c.sent(), model = _a.model, metaData = _a.metaData;
+                _a = _b.sent(), model = _a.model, metaData = _a.metaData;
                 return [4 /*yield*/, model_1.saveModel(model, metaData, './models/regression')];
             case 2:
-                _c.sent();
-                return [4 /*yield*/, validateModel('./models/regression')];
-            case 3:
-                _b = _c.sent(), validationInputs = _b.validationInputs, validationResults = _b.validationResults;
-                console.log(validationInputs[50], validationResults[50]);
-                return [2 /*return*/];
+                _b.sent();
+                return [2 /*return*/, validateModel('./models/regression')];
         }
     });
 }); };
-createAndValidateModel();
+var saveValidationData = function (_a) {
+    var validationInputs = _a.validationInputs, validationResults = _a.validationResults;
+    fs.writeFile('./data/regressionValidation.json', JSON.stringify({
+        validationInputs: Array.from(validationInputs),
+        validationResults: Array.from(validationResults),
+    }), function (err) { return console.log(err); });
+};
+createAndValidateModel().then(saveValidationData);

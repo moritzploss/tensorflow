@@ -37,7 +37,7 @@ const saveModel = async (model: tf.LayersModel, metaData: ModelMetaData, path: s
 
 const trainModel = async (model: tf.LayersModel, inputs: tf.Tensor, labels: tf.Tensor, logPath: string): Promise<tf.History> => {
   model.compile({
-    optimizer: tf.train.adam(),
+    optimizer: tf.train.adamax(),
     loss: tf.losses.meanSquaredError,
     metrics: ['mse'],
   });
