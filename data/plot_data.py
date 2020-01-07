@@ -6,7 +6,7 @@ with open("./regressionValidation.json", "r") as data_file:
 
     with open("./regressionInput.json", "r") as input_file:
         inputData = json.load(input_file)
-
+        print(len(inputData['horsepowers']))
         plt.scatter(
             inputData['horsepowers'],
             inputData['mpgs'],

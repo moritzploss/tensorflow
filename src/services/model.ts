@@ -43,7 +43,7 @@ const trainModel = async (model: tf.LayersModel, inputs: tf.Tensor, labels: tf.T
   });
 
   return model.fit(inputs, labels, {
-    batchSize: 64,
+    batchSize: 392,
     epochs: 50,
     shuffle: true,
     callbacks: tf.node.tensorBoard(logPath),

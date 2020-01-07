@@ -7,12 +7,10 @@
   "main": "server.js",
   "scripts": {
     "lint": "esw -w --clear './src/**.ts'",
-    "dev": "DEBUG=hackday:* nodemon ./dist/server.js --exec \"node --require 'dotenv/config'\"",
+    "start": "node ./dist/regression.js",
     "test": "jest",
     "build:watch": "tsc -p . --watch",
-    "build": "tsc -p .",
-    "clearlogs": "rm -r ./logs",
-    "start": "node ./dist/server.js"
+    "build": "tsc -p ."
   },
   "dependencies": {
     "@tensorflow/tfjs": "^1.5.1",

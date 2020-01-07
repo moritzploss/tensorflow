@@ -91,7 +91,7 @@ var trainModel = function (model, inputs, labels, logPath) { return __awaiter(vo
             metrics: ['mse'],
         });
         return [2 /*return*/, model.fit(inputs, labels, {
-                batchSize: 64,
+                batchSize: 392,
                 epochs: 50,
                 shuffle: true,
                 callbacks: tf.node.tensorBoard(logPath),
