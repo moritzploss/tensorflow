@@ -7,6 +7,7 @@ var normalize = function (tensor) {
     var normTensor = tensor.sub(min).div(max.sub(min));
     return { min: min, max: max, normTensor: normTensor };
 };
+exports.normalize = normalize;
 var unNormalize = function (tensor, min, max) { return tensor
     .mul(max.sub(min))
     .add(min); };

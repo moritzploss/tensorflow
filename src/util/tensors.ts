@@ -24,5 +24,6 @@ const toNormTensor = (dataArray: number[]): NormTensorData => (
 
 export {
   toNormTensor,
+  normalize,
   unNormalize,
 };
