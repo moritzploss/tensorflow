@@ -22,7 +22,7 @@ To run the regression model:
 To visualize the results:
 
     cd data
-    python3 plot_data.py
+    python plot_data.py
 
 ## Training Logs
 
