@@ -24,15 +24,11 @@ To visualize the results:
     cd data
     python3 plot_data.py
 
-## Data Visualization
+## Training Logs
 
-Graph data is logged to the `tensorboard` directory. To launch the visualization server, run:
+Training data is logged to the `tensorboard` directory. To launch the visualization server, run:
 
     tensorboard --logdir ./tensorboard
-
-You may need to install `tensorboard` first:
-
-    pip install tensorboard
 
 ## Troubleshooting
 
