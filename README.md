@@ -2,11 +2,24 @@
 
 ## About
 
-This repo contains small projects built with `TensorFlow`. To run the regression model:
+This repo contains small projects built with `TensorFlow`.
+
+## Get Started
+
+Install required libraries for `Node` and `Python 3`:
+
+    npm i
+    pip install -r requirements.txt
+
+## Models
+
+#### Regression Model
+
+To run the regression model:
 
     node dist/regression.js
 
-To visualize the result:
+To visualize the results:
 
     cd data
     python3 plot_data.py
